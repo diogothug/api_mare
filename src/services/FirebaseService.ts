@@ -3,32 +3,50 @@ import { TideData, MarineData } from '../models/MarineData';
 import path from 'path';
 
 // Load Service Account
-let serviceAccount;
+let serviceAccount: any = null;
 
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     try {
         serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     } catch (e) {
-        console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT env var', e);
+        console.error('[Firebase] Failed to parse FIREBASE_SERVICE_ACCOUNT env var. Is it valid JSON?', e);
     }
 } else {
     try {
         const serviceAccountPath = path.resolve(__dirname, '../../serviceAccountKey.json');
         serviceAccount = require(serviceAccountPath);
     } catch (e) {
-        console.warn('No serviceAccountKey.json found and no ENV var set.');
+        console.warn('[Firebase] No serviceAccountKey.json found and no ENV var set.');
     }
 }
 
-if (!admin.apps.length && serviceAccount) {
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: "https://maremorere-default-rtdb.firebaseio.com"
-    });
+if (!admin.apps.length) {
+    if (serviceAccount) {
+        try {
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount),
+                databaseURL: "https://maremorere-default-rtdb.firebaseio.com"
+            });
+            console.log('[Firebase] Initialized successfully.');
+        } catch (initErr) {
+            console.error('[Firebase] Initialization critical error:', initErr);
+            // Don't throw here to allow app to start, but DB calls will fail.
+        }
+    } else {
+        console.error('[Firebase] CRITICAL: No credentials found. Firebase will not work.');
+    }
 }
 
 export class FirebaseService {
-    private db = admin.database();
+    // Lazy init to prevent crash on class load if app setup failed
+    private get db() {
+        try {
+            return admin.database();
+        } catch (e) {
+            console.error('[Firebase] Accessed DB before valid init.', e);
+            throw e;
+        }
+    }
 
     /**
      * Stores aggregated marine data.
