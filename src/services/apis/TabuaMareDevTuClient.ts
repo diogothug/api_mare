@@ -29,7 +29,7 @@ export class TabuaMareDevTuClient implements TideProvider {
 
             console.log('TabuaMareDevTu Raw Status:', response.status);
             // console.log('TabuaMareDevTu Raw Data:', JSON.stringify(response.data, null, 2));
-            require('fs').writeFileSync('check_api_raw.txt', JSON.stringify(response.data, null, 2));
+            // require('fs').writeFileSync('check_api_raw.txt', JSON.stringify(response.data, null, 2));
 
             // Response structure from docs: { data: [ ...tides ] } 
             // Need to inspect actual structure safely.

@@ -15,6 +15,15 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Root check for Vercel
+app.get('/', (req, res) => {
+    res.json({
+        app: 'Marine Data API',
+        status: 'running',
+        docs: '/api/v1/tides?region=velha-boipeba'
+    });
+});
+
 app.get('/api/v1/tides', TideController.getTides);
 
 if (require.main === module) {
