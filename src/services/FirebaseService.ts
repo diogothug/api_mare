@@ -5,18 +5,29 @@ import path from 'path';
 // Load Service Account
 let serviceAccount: any = null;
 
+// 1. Try Environment Variable (Production/Vercel)
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     try {
         serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        console.log('[Firebase] Loaded credentials from ENV.');
     } catch (e) {
-        console.error('[Firebase] Failed to parse FIREBASE_SERVICE_ACCOUNT env var. Is it valid JSON?', e);
+        console.error('[Firebase] Failed to parse FIREBASE_SERVICE_ACCOUNT env var.', e);
     }
-} else {
+}
+// 2. Try Local File (Dev)
+else {
     try {
+        const fs = require('fs');
         const serviceAccountPath = path.resolve(__dirname, '../../serviceAccountKey.json');
-        serviceAccount = require(serviceAccountPath);
+        if (fs.existsSync(serviceAccountPath)) {
+            const fileContent = fs.readFileSync(serviceAccountPath, 'utf8');
+            serviceAccount = JSON.parse(fileContent);
+            console.log('[Firebase] Loaded credentials from local file.');
+        } else {
+            console.warn('[Firebase] No serviceAccountKey.json found locally.');
+        }
     } catch (e) {
-        console.warn('[Firebase] No serviceAccountKey.json found and no ENV var set.');
+        console.warn('[Firebase] Error trying to load serviceAccountKey.json:', e);
     }
 }
 
