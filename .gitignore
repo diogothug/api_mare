@@ -1,0 +1,8 @@
+node_modules
+dist
+.env
+serviceAccountKey.json
+check_result.txt
+check_api_raw.txt
+*.log
+.DS_Store
